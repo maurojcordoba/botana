@@ -74,7 +74,7 @@ def main() -> None:
     # Start the Bot
     #updater.start_polling()
     updater.start_webhook(listen="0.0.0.0",
-                          port=int(PORT),
+                          port=PORT,
                           url_path=config.token)
 
     updater.bot.setWebhook('https://botanabot.herokuapp.com/' + config.token)
