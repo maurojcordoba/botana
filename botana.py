@@ -17,7 +17,7 @@ bot.
 
 import logging
 import config
-
+import os
 from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
@@ -28,6 +28,8 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+
+PORT = int(os.environ.get('PORT', 5000))
 
 # Define a few command handlers. These usually take the two arguments update and
 # context.
@@ -72,9 +74,9 @@ def main() -> None:
     # Start the Bot
     #updater.start_polling()
     updater.start_webhook(listen="0.0.0.0",
-                          port=int(config.port),
+                          port=int(PORT),
                           url_path=config.token)
-                          
+
     updater.bot.setWebhook('https://botanabot.herokuapp.com/' + config.token)
 
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
