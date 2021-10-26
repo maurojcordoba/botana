@@ -66,6 +66,15 @@ def mesa(update: Update, context: CallbackContext) -> None:
     caption =  "*{name}*\n{owner}".format(name=game['name'],owner=game['owner'])   
     context.bot.sendPhoto(chat_id=update.effective_chat.id, photo = game['thumbnail'] , caption=caption, parse_mode="Markdown")
 
+def juega(update: Update, context: CallbackContext) -> None:
+    """genera una lista desordenada"""    
+    users_list = ['juane','juank','matias','mauro']
+    
+    shuffle(users_list)    
+    users_string = "\n".join(users_list)
+    
+    update.message.reply_text(users_string)    
+
 
 def main() -> None:
     """Start the bot."""
@@ -81,6 +90,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("help", help_command))
     dispatcher.add_handler(CommandHandler("wz", wz))
     dispatcher.add_handler(CommandHandler("mesa", mesa))
+    dispatcher.add_handler(CommandHandler("juega", juega))
 
     # on non command i.e message - echo the message on Telegram
     #dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
