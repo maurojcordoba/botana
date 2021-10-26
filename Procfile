@@ -1,1 +1,1 @@
-web: python3 botana.py
+bot: python3 botana.py
