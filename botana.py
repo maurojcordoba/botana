@@ -58,7 +58,8 @@ def wz(update: Update, context: CallbackContext) -> None:
 def main() -> None:
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
-    updater = Updater( config.token )
+    token = os.environ['TOKEN']
+    updater = Updater( token )
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
