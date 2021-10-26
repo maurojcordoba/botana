@@ -2,24 +2,11 @@
 # pylint: disable=C0116,W0613
 # This program is dedicated to the public domain under the CC0 license.
 
-"""
-Simple Bot to reply to Telegram messages.
-
-First, a few handler functions are defined. Then, those functions are passed to
-the Dispatcher and registered at their respective places.
-Then, the bot is started and runs until we press Ctrl-C on the command line.
-
-Usage:
-Basic Echobot example, repeats messages.
-Press Ctrl-C on the command line or send a signal to the process to stop the
-bot.
-"""
-
 import logging
 import os
 from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
-from random import randint
+from random import randint, shuffle
 import requests
 import xmltodict
 
@@ -73,7 +60,8 @@ def mesa(update: Update, context: CallbackContext) -> None:
         data = xmltodict.parse(response.content)
         for item in data['items']['item']:
             game_list.append({'name': item['name']['#text'], 'thumbnail': item['thumbnail'], 'owner': user})
-
+    
+    shuffle(game_list)
     game = game_list[randint(0,len(game_list)-1)]    
     caption =  "*{name}*\n{owner}".format(name=game['name'],owner=game['owner'])   
     context.bot.sendPhoto(chat_id=update.effective_chat.id, photo = game['thumbnail'] , caption=caption, parse_mode="Markdown")
