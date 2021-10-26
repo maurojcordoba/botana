@@ -52,7 +52,7 @@ def echo(update: Update, context: CallbackContext) -> None:
 
 def wz(update: Update, context: CallbackContext) -> None:
     """Wz señal"""    
-    context.bot.sendPhoto(chat_id=update.effective_chat.id, photo = open('../../src/images/wz.jpg','rb'), parse_mode="Markdown")
+    context.bot.sendPhoto(chat_id=update.effective_chat.id, photo = open('images/wz.jpg','rb'), parse_mode="Markdown")
 
 def main() -> None:
     """Start the bot."""
