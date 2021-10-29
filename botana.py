@@ -3,12 +3,10 @@
 # This program is dedicated to the public domain under the CC0 license.
 
 import logging
-import os
-from telegram import Update, ForceReply
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
-from random import randint, shuffle
-import requests
-import xmltodict
+import os, json, promiedos
+from telegram import Update, ForceReply, ChatAction
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler
+from random import randint
 
 # Enable logging
 logging.basicConfig(
@@ -17,8 +15,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-
-PORT = int(os.environ.get('PORT', 8443))
+INPUT_TEXT = 0
 
 # Define a few command handlers. These usually take the two arguments update and
 # context.
@@ -29,12 +26,6 @@ def start(update: Update, context: CallbackContext) -> None:
         fr'Hola {user.mention_markdown_v2()}\!',
         reply_markup=ForceReply(selective=True),
     )
-
-
-def help_command(update: Update, context: CallbackContext) -> None:
-    """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
-
 
 def echo(update: Update, context: CallbackContext) -> None:
     if(update.message.text.startswith('/')):
@@ -49,48 +40,80 @@ def wz(update: Update, context: CallbackContext) -> None:
     """Wz señal"""    
     context.bot.sendPhoto(chat_id=update.effective_chat.id, photo = open('images/wz.jpg','rb'), parse_mode="Markdown")
 
-def mesa(update: Update, context: CallbackContext) -> None:
-    """Sortea el juego de mesa segun bgg collection list"""    
-    users = ['maurocor','juankazon','maticepe','juanecasla']
-    
-    game_list = []
-    for user in users:        
-        url = "https://www.boardgamegeek.com/xmlapi/collection/{user}?own=1".format(user=user)        
-        response = requests.get(url)
-        data = xmltodict.parse(response.content)
-        for item in data['items']['item']:
-            game_list.append({'name': item['name']['#text'], 'thumbnail': item['thumbnail'], 'owner': user})
-    
-    shuffle(game_list)
-    game = game_list[randint(0,len(game_list)-1)]    
-    caption =  "*{name}*\n{owner}".format(name=game['name'],owner=game['owner'])   
-    context.bot.sendPhoto(chat_id=update.effective_chat.id, photo = game['thumbnail'] , caption=caption, parse_mode="Markdown")
+def saluda_command_handler(update: Update, context: CallbackContext) -> int:
+    update.message.reply_text('Dime tu nombre:')
+    return INPUT_TEXT
 
-def juega(update: Update, context: CallbackContext) -> None:
-    """genera una lista desordenada"""    
-    users_list = ['juane','juank','matias','mauro']
-    
-    shuffle(users_list)    
-    users_string = "\n".join(users_list)
-    
-    update.message.reply_text(users_string)    
+def input_text(update: Update, context: CallbackContext) -> int:
+    text = update.message.text
 
+    chat = update.message.chat
+    chat.send_action(
+        action=ChatAction.TYPING,
+        timeout=None
+
+    )
+
+    saludo = 'Hola {0}!!!!'.format(text)
+
+    update.message.reply_text(saludo)
+
+    return ConversationHandler.END
+
+def partidos_hoy(update: Update, context: CallbackContext) -> None:
+    ligas_json = os.getenv('LIGAS')
+    ligas = json.loads(ligas_json)["ligas"]
+
+    texto = promiedos.partidos_hoy(ligas)
+
+    update.message.reply_text(texto, parse_mode='Markdown')
+
+def partidos_aye(update: Update, context: CallbackContext) -> None:
+    ligas_json = os.getenv('LIGAS')
+    ligas = json.loads(ligas_json)["ligas"]
+
+    texto = promiedos.partidos_ayer(ligas)
+
+    update.message.reply_text(texto, parse_mode='Markdown')
+
+def partidos_man(update: Update, context: CallbackContext) -> None:
+    ligas_json = os.getenv('LIGAS')
+    ligas = json.loads(ligas_json)["ligas"]
+
+    texto = promiedos.partidos_man(ligas)
+
+    update.message.reply_text(texto, parse_mode='Markdown')    
 
 def main() -> None:
     """Start the bot."""
-    # Create the Updater and pass it your bot's token.
+
+    # Create the Updater and pass it your bot's token.    
     token = os.environ['TOKEN']    
+    
     updater = Updater( token )
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
 
     # on different commands - answer in Telegram
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(CommandHandler("help", help_command))
+    dispatcher.add_handler(CommandHandler("start", start))    
     dispatcher.add_handler(CommandHandler("wz", wz))
-    dispatcher.add_handler(CommandHandler("mesa", mesa))
-    dispatcher.add_handler(CommandHandler("juega", juega))
+    dispatcher.add_handler(CommandHandler("hoy", partidos_hoy))
+    dispatcher.add_handler(CommandHandler("man", partidos_man))
+    dispatcher.add_handler(CommandHandler("aye", partidos_aye))
+    
+
+    dispatcher.add_handler(ConversationHandler(
+        entry_points=[
+            CommandHandler('saluda', saluda_command_handler)
+        ],
+
+        states={
+            INPUT_TEXT: [MessageHandler(Filters.text, callback=input_text)]
+        },
+
+        fallbacks=[]
+    ))
 
     # on non command i.e message - echo the message on Telegram
     #dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
