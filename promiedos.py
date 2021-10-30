@@ -10,7 +10,7 @@ def partidos_hoy(ligas):
     return _partidos(url,ligas)
 
 def partidos_ayer(ligas):
-    url = _partidos_url('ayer')
+    url = _partidos_url('aye')
     return _partidos(url,ligas)
 
 def partidos_man(ligas):
