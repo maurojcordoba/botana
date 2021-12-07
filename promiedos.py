@@ -38,15 +38,13 @@ def _partidos(url,ligas) -> str:
         
         if (liga in ligas):
             result += f'*{liga}*\n'
-            tr_list = table.find_all('tr', attrs={'name':re.compile('vp$')})
+            tr_list = table.find_all('tr', attrs={'name':re.compile('vp$'), 'id':re.compile('^\d')})
 
             for tr in tr_list:    
-                #en_juego = tr['name']
-                
                 td_list = tr.find_all('td',attrs={'class':re.compile('^game')})    
 
                 p = []
-                for td in td_list:
+                for td in td_list:                    
                     p.append(td.text.strip())
                 
                 result += fr'{p[0]} - {p[1]} {p[2]} vs {p[3]} {p[4]}' + '\n'
